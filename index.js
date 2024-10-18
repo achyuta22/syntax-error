@@ -1,12 +1,7 @@
-const express=require("express");
+// index.js
+const server = require('./server'); // Import the server from server.js
 
-const app=express();
-
-
-
-
-app.use(express.json());
-
-app.listen(3000,()=>{
-    console.log("Server is running on port 3000");
-})
+const PORT = 3000;
+server.listen(PORT, () => {
+    console.log(`Server running at http://localhost:${PORT}`);
+});
