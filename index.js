@@ -41,7 +41,7 @@ const io = require("socket.io")(server, {
         `https://eazeplace.com`,
         `https://eazeplace.com/`,
         `https://syntax-erro-frontend-g0046khtj-eazeplace.vercel.app` // Add your Vercel URL here
-       https://syntax-erro-frontend-git-main-eazeplace.vercel.app/
+       `https://syntax-erro-frontend-git-main-eazeplace.vercel.app`
 
       ],
     },
