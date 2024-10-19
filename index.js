@@ -35,7 +35,8 @@ app.use(
       `https://localhost:3000`,
       `https://eazeplace.com`,
       `https://eazeplace.com/`,
-            `https://syntax-erro-frontend-git-main-eazeplace.vercel.app`
+            `https://syntax-erro-frontend-git-main-eazeplace.vercel.app`,
+     `http://13.201.229.174/`
 
     ],
   })
@@ -62,7 +63,9 @@ const io = require("socket.io")(server, {
         `https://localhost:3000`,
         `https://eazeplace.com`,
         `https://eazeplace.com/`,
-       `https://syntax-erro-frontend-git-main-eazeplace.vercel.app`
+       `https://syntax-erro-frontend-git-main-eazeplace.vercel.app`,
+            `http://13.201.229.174/`
+
 
       ],
     },
