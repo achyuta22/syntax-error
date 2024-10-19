@@ -40,6 +40,8 @@ const io = require("socket.io")(server, {
         `https://localhost:3000`,
         `https://eazeplace.com`,
         `https://eazeplace.com/`,
+        `https://syntax-erro-frontend-g0046khtj-eazeplace.vercel.app` // Add your Vercel URL here
+
       ],
     },
   });
