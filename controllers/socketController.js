@@ -1,10 +1,23 @@
 // controllers/socketController.js
 let sharedVariable = 'initialValue';
-
+let rooms = {}; // for people to add into rooms 
 module.exports = (io) => {
     return (socket) => {
         console.log('A user connected:', socket.id);
         let room; // Variable to store the room the user joined
+
+        // Handle the 'createRoom' event for the host
+        socket.on('createRoom', (roomName) => {
+            if (!rooms[roomName]) {
+                rooms[roomName] = { host: socket.id, peers: [] }; // Create a new room
+                room = roomName; // Store room name
+                socket.join(room); // Host joins the room
+                console.log(`Host ${socket.id} created and joined room: ${room}`);
+                socket.emit('roomCreated', room); // Notify host room is created
+            } else {
+                socket.emit('error', 'Room already exists');
+            }
+        });
 
         // Handle the 'joinRoom' event
         socket.on('joinRoom', (roomName) => {
@@ -30,4 +43,4 @@ module.exports = (io) => {
             console.log('User disconnected:', socket.id);
         });
     };
-};
+}
