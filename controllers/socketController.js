@@ -65,6 +65,13 @@ module.exports = (io) => {
                 io.to(currentRoom).emit('playStatusUpdated', newStatus);
             }
         });
+        // Handle the song URL update event from the host
+        socket.on('updateSongUrl', (newSongUrl) => {
+            if (currentRoom && rooms[currentRoom]) {
+                rooms[currentRoom].songUrl = newSongUrl;
+                io.to(currentRoom).emit('songUrlUpdated', newSongUrl); // Broadcast the new song URL to all peers in the room
+            }
+        });
 
         // Handle the disconnect event
         socket.on('disconnect', () => {
