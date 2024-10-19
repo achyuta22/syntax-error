@@ -4,7 +4,7 @@ const express=require("express");
 const connectDB= require("./db/connection");
 const PORT = 5000;
 const app= express();
-const cors=require("cors")
+const cors=require("cors");
  // server.js
 // const express = require("express");
 // const cors = require('cors');
@@ -18,6 +18,28 @@ const apiRoutes = require('./routes/apiRoutes'); // Import API routes
 
 app.use(express.json()); // Middleware to parse JSON requests
 app.use(cors()); // Enable CORS for cross-origin requests
+app.use(
+  cors({
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: [
+      `http://localhost:3000`,
+      `http://localhost:3001`,
+      `http://3.109.154.34/`,
+      `http://3.109.154.34`,
+      `http://eazeplace.com/`,
+      `http://eazeplace.com`,
+      `http://15.206.117.10:3000`,
+      `http://13.232.95.206:3000`,
+      `https://localhost:3000`,
+      `https://eazeplace.com`,
+      `https://eazeplace.com/`,
+            `https://syntax-erro-frontend-git-main-eazeplace.vercel.app`
+
+    ],
+  })
+);
 // Use the API routes
 app.use('/api', apiRoutes); // Define base URL for API routes
 console.log("hello")
