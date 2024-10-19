@@ -19,6 +19,11 @@ const apiRoutes = require('./routes/apiRoutes'); // Import API routes
 app.use(express.json()); // Middleware to parse JSON requests
 app.use(cors()); // Enable CORS for cross-origin requests
 app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+  })
+);
+app.use(
   cors({
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -49,6 +54,7 @@ const server=app.listen(PORT, () => {
   console.log(`Server running at http://localhost:${PORT}`);
 });
 // Socket.IO connection
+
 const io = require("socket.io")(server, {
     pingTimeOut: 600000,
     cors: {
