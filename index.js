@@ -3,7 +3,7 @@
 const express=require("express");
 const connectDB= require("./db/connection");
 const PORT = 5000;
- const app= express();
+const app= express();
 const cors=require("cors")
  // server.js
 // const express = require("express");
