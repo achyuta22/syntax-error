@@ -25,7 +25,7 @@ npm install
 ### 2. Start the Server
 To start the development server, run:
 ```bash
-npm start
+nodemon index.js
 ```
  controllers: Contains socket and user controllers for handling socket connections and user-related logic.
 - db: Manages database connections.
