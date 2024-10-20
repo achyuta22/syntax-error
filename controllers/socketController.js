@@ -1,3 +1,5 @@
+const { timeStamp } = require("console");
+
 let sharedVariable = 'initialValue';
 let rooms = {}; // For managing rooms and their participants
 
@@ -7,13 +9,14 @@ module.exports = (io) => {
         let currentRoom; // Variable to store the current room the user is in
 
         // Handle the 'createRoom' event for the host
-        socket.on('createRoom', ({ roomName, songUrl,playStatus }) => {
+        socket.on('createRoom', ({ roomName, songUrl, playStatus }) => {
             if (!rooms[roomName]) {
-                rooms[roomName] = { host: socket.id, peers: [], songUrl, playStatus: false }; // Add playStatus to the room data
+                rooms[roomName] = { host: socket.id, peers: {}, songUrl, playStatus: false,hostTimeStamp: 0}; // Add playStatus to the room data
                 currentRoom = roomName; // Store the current room name
                 socket.join(currentRoom); // Host joins the room
-                console.log(`Host ${socket.id} created and joined room: ${currentRoom}, songUrl: ${songUrl} , playStatus : ${playStatus}`);
-                
+                console.log(`Host ${socket.id} created and joined room: ${currentRoom}, songUrl: ${songUrl} , playStatus: ${playStatus}`);
+                // creating a host functionality that will be used in player.js
+                socket.emit('Host',socket.id);
                 // Notify the host that the room is created
                 socket.emit('roomCreated', currentRoom);
                 // Broadcast the song URL to the room
@@ -31,17 +34,38 @@ module.exports = (io) => {
                 console.log(`User ${socket.id} joined room: ${currentRoom}`);
 
                 // Send the current song URL and play status to the newly joined user
-                const { songUrl, playStatus } = rooms[currentRoom];
+                const { host ,songUrl, playStatus ,hostTimeStamp} = rooms[currentRoom];
+                
+                // Initialize the peer with socket id and default currentTime
+                rooms[currentRoom].peers[socket.id] = {
+                    peerId: socket.id,
+                    currentTime: hostTimeStamp  // Default currentTime
+                };
+                
                 console.log(`SongUrl in join room: ${songUrl}`);
                 socket.emit('songUrlUpdated', songUrl); // Send the song URL to the new user
                 socket.emit('playStatusUpdated', playStatus); // Send the current play status to the new user
-
-                // Notify the room about the new peer
-                io.to(currentRoom).emit('newPeer', socket.id); // Optional: Notify room about the new peer
+                socket.emit('Host', host); // the host id is being sent to all the peers 
+                // Notify the room about the new peer and broadcast their components
+                io.to(currentRoom).emit('peer', rooms[currentRoom].peers[socket.id]);
             } else {
-                socket.emit('error', 'Room does not exist'); // Notify user if the room doesn't exist
+                socket.emit('error', 'Room does not exist');
             }
         });
+
+        // Handle the 'updatePeerComponent' event to update currentTime
+        socket.on('updatePeerComponent', ({ currentTime, peerId }) => {
+            if (rooms[currentRoom] && rooms[currentRoom].peers[peerId]) {
+                // Update the specific component of the peer
+                rooms[currentRoom].peers[peerId].currentTime = currentTime;
+
+                // Notify others in the room about the updated component (excluding the sender)
+                socket.broadcast.to(currentRoom).emit('peerComponentUpdated', rooms[currentRoom].peers[peerId]);
+            } else {
+                socket.emit('error', 'Unable to update component, room or peer not found.');
+            }
+        });
+
 
         // Listen for changes to the shared variable from clients
         socket.on('changeVariable', (newValue) => {
@@ -65,6 +89,7 @@ module.exports = (io) => {
                 io.to(currentRoom).emit('playStatusUpdated', newStatus);
             }
         });
+
         // Handle the song URL update event from the host
         socket.on('updateSongUrl', (newSongUrl) => {
             if (currentRoom && rooms[currentRoom]) {
@@ -73,15 +98,32 @@ module.exports = (io) => {
             }
         });
 
+        // Emit the current timestamp from the host to peers
+        socket.on('syncTimestamp', (timestamp) => {
+            if (rooms[currentRoom]) {
+                console.log(`syncTimestamp received timestamp: ${timestamp}`);
+                rooms[currentRoom].hostTimeStamp = timestamp;  // Store the host's timestamp
+                // Broadcast the timestamp to all peers in the room
+                socket.broadcast.to(currentRoom).emit('timestampUpdated', timestamp);
+                console.log(`Timestamp sent: ${timestamp} to room: ${currentRoom}`);
+            }
+        });
+
         // Handle the disconnect event
         socket.on('disconnect', () => {
             console.log('User disconnected:', socket.id);
-            // Optionally, you could handle room cleanup here if necessary
             if (currentRoom && rooms[currentRoom]) {
                 // Remove the user from the room's peers
-                rooms[currentRoom].peers = rooms[currentRoom].peers.filter(peer => peer !== socket.id);
+                delete rooms[currentRoom].peers[socket.id];
+
                 // Notify the room about the user disconnecting
                 io.to(currentRoom).emit('peerDisconnected', socket.id);
+
+                // Optionally, clean up the room if the host disconnects
+                if (rooms[currentRoom].host === socket.id) {
+                    io.to(currentRoom).emit('roomClosed'); // Notify everyone that the room is closed
+                    delete rooms[currentRoom]; // Delete the room data
+                }
             }
         });
     };
