@@ -89,7 +89,7 @@ module.exports = (io) => {
                 io.to(currentRoom).emit('playStatusUpdated', newStatus);
             }
         });
-
+        
         // Handle the song URL update event from the host
         socket.on('updateSongUrl', (newSongUrl) => {
             if (currentRoom && rooms[currentRoom]) {
