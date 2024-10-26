@@ -24,7 +24,7 @@ module.exports = (io) => {
         // Handle the 'createRoom' event for the host
         socket.on('createRoom', ({ roomName, songUrl, playStatus}) => {
             if (!rooms[roomName]) {
-                rooms[roomName] = { host: socket.id, peers: {}, songUrl, playStatus: false,hostTimeStamp: 0,}; // Add playStatus to the room data
+                rooms[roomName] = { host: socket.id, peers: {}, songUrl, playStatus: false,hostTimeStamp: 0,jumpedTimeStamp:0,}; // Add playStatus to the room data
                 currentRoom = roomName; // Store the current room name
                 socket.join(currentRoom); // Host joins the room
                 console.log(`Host ${socket.id} created and joined room: ${currentRoom}, songUrl: ${songUrl} , playStatus: ${playStatus}`);
@@ -129,8 +129,20 @@ module.exports = (io) => {
                 rooms[currentRoom].hostTimeStamp = timestamp;  // Store the host's timestamp
                 // Broadcast the timestamp to all peers in the room
                 console.log(`Timestamp sent: ${timestamp} to room: ${currentRoom}`);
+                
             }
         });
+        socket.on('timeStampChanged', (changedTimeStamp) =>{
+            console.log(`timeStamp changed: ${changedTimeStamp}`);
+            if (rooms[currentRoom]) {
+               
+                rooms[currentRoom].jumpedTimeStamp = changedTimeStamp;  
+                // Broadcast the timestamp to all peers in the room
+                io.to(currentRoom).emit('setChangedTimeStamp', changedTimeStamp); // Broadcast the new song URL to all peers in the room
+
+                
+            }
+        })
 
         // Handle the disconnect event
         socket.on('disconnect', () => {
